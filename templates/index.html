@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Tic Tac Toe</title>
+</head>
+<body>
+<div id="game-board">
+    <div class="cell" onclick="makeMove(0)"></div>
+    <div class="cell" onclick="makeMove(1)"></div>
+    <div class="cell" onclick="makeMove(2)"></div>
+    <div class="cell" onclick="makeMove(3)"></div>
+    <div class="cell" onclick="makeMove(4)"></div>
+    <div class="cell" onclick="makeMove(5)"></div>
+    <div class="cell" onclick="makeMove(6)"></div>
+    <div class="cell" onclick="makeMove(7)"></div>
+    <div class="cell" onclick="makeMove(8)"></div>
+</div>
+<button onclick="resetGame()">Reset Game</button>
+<div>
+    <h1 id="Winner"></h1>
+</div>
+
+<script>
+let board = Array(9).fill(0);
+let gameActive = true;
+const winnerH1= document.getElementById('Winner')
+function makeMove(index) {
+    if (board[index] === 0 && gameActive) {
+        board[index] = 1; // Human move
+        fetch('/move', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({move: index, board: board})
+        })
+        .then(response => response.json())
+        .then(data => {
+            board = data.board;
+            renderBoard();
+            if (data.winner !== null) {
+                gameActive = false; // Stop further moves
+                
+                winnerH1.innerText=data.winner === 1 ? 'You win!' : 'AI wins!';
+            }
+        });
+        renderBoard();
+        
+    }
+}
+
+function renderBoard() {
+    const cells = document.querySelectorAll('.cell');
+    
+    cells.forEach((cell, index) => {
+        cell.textContent = board[index] === 1 ? 'X' : (board[index] === -1 ? 'O' : '');
+    });
+}
+
+function resetGame() {
+    board.fill(0);
+    gameActive = true;
+    winnerH1.innerText = ''
+    renderBoard();
+}
+</script>
+</body>
+</html>
